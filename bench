@@ -1,0 +1,49 @@
+#!/bin/bash
+
+# error handling and help message printing
+[[ ! "$1" =~ ^[0-9]+$ ]] && echo >/dev/stderr "'$1' is not a positive integer"
+[[ "$#" -le 1 ]] && echo >/dev/stderr "not enough arguments"
+
+if [[ "$#" -le 1 || ! "$1" =~ ^[0-9]+$ ]]; then
+    echo >/dev/stderr "Usage: ${0##*/} repeatcount cmd... # run cmd repeatcount times and measure execution time in milliseconds"
+    exit 1
+fi
+
+# ensure reps is a number and remove first argument from $@
+reps="$1"
+reps="$((reps + 0))"
+shift
+
+times=() # array to keep execution times in milliseconds in
+for ((i = 0; i < reps; i++)); do
+    # removing . and , decimal point takes are of almost all locales
+    # and goes from floating number to integer number of microseconds
+    a=${EPOCHREALTIME/[.,]/}
+    "$@"
+    b=${EPOCHREALTIME/[.,]/}
+    # divide by 1000 to go from microseconds to milliseconds
+    elapsed=$(((b - a) / 1000))
+    times+=("$elapsed")
+done
+
+# echo >/dev/stderr $'\ntimes:' "${times[@]}"
+
+# very bad sort, O(n^2) but for small number of values its okay
+# TODO: put timing around the sort itself
+sorted=() # array to put sorted times values in
+arrlen="${#times[@]}"
+for ((i = 0; i < arrlen; i++)); do
+    smallestkey=''
+    smallestvalue=$((1 << 60))
+    for key in "${!times[@]}"; do
+        val="${times[$key]}"
+        if ((val < smallestvalue)); then
+            smallestvalue="$val"
+            smallestkey="$key"
+        fi
+    done
+    unset "times[$smallestkey]"
+    sorted+=("$smallestvalue")
+done
+
+echo >/dev/stderr $'\ntimes:' "${sorted[@]}"
