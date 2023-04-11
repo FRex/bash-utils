@@ -1,0 +1,7 @@
+#!/bin/bash
+reps="$1"
+reps="$((reps + 0))" # ensure reps is a number
+shift                # remove first argument from $@
+for ((i = 0; i < reps; i++)); do
+    "$@"
+done
