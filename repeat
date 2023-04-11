@@ -1,7 +1,22 @@
 #!/bin/bash
+
+# error handling and help message printing
+[[ ! "$1" =~ ^[0-9]+$ ]] && echo >/dev/stderr "'$1' is not a positive integer"
+[[ "$#" -le 1 ]] && echo >/dev/stderr "not enough arguments"
+
+if [[ "$#" -le 1 || ! "$1" =~ ^[0-9]+$ ]]; then
+    echo >/dev/stderr "Usage: ${0##*/} repeatcount cmd..."
+    exit 1
+fi
+
+# ensure reps is a number and remove first argument from $@
 reps="$1"
-reps="$((reps + 0))" # ensure reps is a number
-shift                # remove first argument from $@
-for ((i = 0; i < reps; i++)); do
-    "$@"
+reps="$((reps + 0))"
+shift
+
+# run $reps times with env var set so the command can detect its run via repeat
+# in last repeat REPEAT_CURRENT_ITERATION == REPEAT_MAX_ITERATION
+for ((i = 1; i <= reps; i++)); do
+
+    REPEAT_CURRENT_ITERATION="$i" REPEAT_MAX_ITERATION="$reps" "$@"
 done
