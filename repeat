@@ -5,7 +5,7 @@
 [[ "$#" -le 1 ]] && echo >/dev/stderr "not enough arguments"
 
 if [[ "$#" -le 1 || ! "$1" =~ ^[0-9]+$ ]]; then
-    echo >/dev/stderr "Usage: ${0##*/} repeatcount cmd..."
+    echo >/dev/stderr "Usage: ${0##*/} repeatcount cmd... # run cmd repeatcount times"
     exit 1
 fi
 
